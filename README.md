@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/banner.png" alt="Udaipur Craft — The City of Lakes" width="100%"></p>
+
 # Udaipur Craft — The City of Lakes · झीलों की नगरी
 
 A Minecraft-style voxel open world of **Udaipur, Rajasthan**, built for the browser with
