@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#0b0d1a" />
     <title>Udaipur Craft — The City of Lakes</title>
     <meta name="description" content="A voxel open world of Udaipur, Rajasthan — Lake Pichola, City Palace, Jag Niwas and Sajjangarh at golden hour." />
   </head>
@@ -18,14 +22,16 @@
       <div id="toast"></div>
       <div id="hotbar"></div>
       <div id="debug" class="hidden"></div>
+      <div id="touch" class="touch-only"></div>
     </div>
     <div id="underwater"></div>
+    <div class="rotate-hint in-game-hint touch-only"><i></i>Rotate to landscape for the best experience</div>
 
     <div id="title" class="screen">
       <div class="vignette"></div>
       <div class="panel">
         <div class="eyebrow">A voxel journey through Mewar</div>
-        <h1>Udaipur&nbsp;Craft</h1>
+        <h1>Udaipur Craft</h1>
         <div class="ornament">
           <svg viewBox="0 -8 220 32" aria-hidden="true">
             <path d="M0 14 H78" />
@@ -44,28 +50,41 @@
           <button id="show-controls" class="btn ghost">Controls</button>
         </div>
         <div id="controls" class="controls hidden">
-          <div><kbd>W A S D</kbd><span>Walk</span></div>
-          <div><kbd>Space</kbd><span>Jump · swim up</span></div>
-          <div><kbd>Shift</kbd><span>Sprint</span></div>
-          <div><kbd>F</kbd> / <kbd>Space ×2</kbd><span>Toggle flight</span></div>
-          <div><kbd>C</kbd><span>Descend while flying</span></div>
-          <div><kbd>Left click</kbd><span>Break block</span></div>
-          <div><kbd>Right click</kbd><span>Place block</span></div>
-          <div><kbd>1–9</kbd> / <kbd>Wheel</kbd><span>Choose block</span></div>
-          <div><kbd>T</kbd><span>Hold to speed up time</span></div>
-          <div><kbd>F3</kbd><span>Debug info</span></div>
-          <div><kbd>Esc</kbd><span>Pause</span></div>
+          <div class="touch-only"><kbd>Left thumb</kbd><span>Move · push to edge to sprint</span></div>
+          <div class="touch-only"><kbd>Drag right side</kbd><span>Look around</span></div>
+          <div class="touch-only"><kbd>&#9650;</kbd><span>Jump · swim up · ascend</span></div>
+          <div class="touch-only"><kbd>Fly</kbd><span>Toggle flight</span></div>
+          <div class="touch-only"><kbd>&#9660;</kbd><span>Descend while flying</span></div>
+          <div class="touch-only"><kbd>Break</kbd> / <kbd>Tap</kbd><span>Break block (hold to repeat)</span></div>
+          <div class="touch-only"><kbd>Place</kbd> / <kbd>Long-press</kbd><span>Place block</span></div>
+          <div class="touch-only"><kbd>Hotbar</kbd><span>Tap a slot to choose</span></div>
+          <div class="touch-only"><kbd>&#10074;&#10074;</kbd><span>Pause</span></div>
+          <div class="kb-only"><kbd>W A S D</kbd><span>Walk</span></div>
+          <div class="kb-only"><kbd>Space</kbd><span>Jump · swim up</span></div>
+          <div class="kb-only"><kbd>Shift</kbd><span>Sprint</span></div>
+          <div class="kb-only"><kbd>F</kbd> / <kbd>Space ×2</kbd><span>Toggle flight</span></div>
+          <div class="kb-only"><kbd>C</kbd><span>Descend while flying</span></div>
+          <div class="kb-only"><kbd>Left click</kbd><span>Break block</span></div>
+          <div class="kb-only"><kbd>Right click</kbd><span>Place block</span></div>
+          <div class="kb-only"><kbd>1–9</kbd> / <kbd>Wheel</kbd><span>Choose block</span></div>
+          <div class="kb-only"><kbd>T</kbd><span>Hold to speed up time</span></div>
+          <div class="kb-only"><kbd>F3</kbd><span>Debug info</span></div>
+          <div class="kb-only"><kbd>Esc</kbd><span>Pause</span></div>
         </div>
       </div>
-      <div class="foot">Click <b>Enter Udaipur</b> to begin · <b>Esc</b> to pause</div>
+      <div class="foot"><span class="kb-only">Click <b>Enter Udaipur</b> to begin · <b>Esc</b> to pause</span><span class="touch-only">Tap <b>Enter Udaipur</b> to begin</span></div>
+      <div class="rotate-hint touch-only"><i></i>Rotate to landscape for the best experience</div>
     </div>
 
     <div id="pause" class="screen hidden">
       <div class="panel small">
+        <div class="pause-col-a">
         <div class="eyebrow">Paused</div>
         <h2>Udaipur Craft</h2>
         <div class="hindi sm">झीलों की नगरी</div>
         <button id="resume" class="btn primary"><span class="label">Resume</span></button>
+        </div>
+        <div class="pause-col-b">
         <div class="row">
           <span class="rl">Time of day</span>
           <div class="seg" id="time-seg">
@@ -79,17 +98,23 @@
         <div class="row">
           <span class="rl">Render distance</span>
           <div class="seg" id="rd-seg">
-            <button data-rd="6">6</button><button data-rd="8">8</button><button data-rd="10">10</button><button data-rd="12">12</button>
+            <button data-rd="4" class="touch-only">4</button><button data-rd="5" class="touch-only">5</button><button data-rd="6">6</button><button data-rd="8">8</button><button data-rd="10">10</button><button data-rd="12">12</button>
           </div>
         </div>
         <div class="row">
-          <span class="rl">Mouse sensitivity</span>
+          <span class="rl"><span class="kb-only">Mouse sensitivity</span><span class="touch-only">Look sensitivity</span></span>
           <input type="range" id="sens" min="0.3" max="2.5" step="0.05" value="1" />
         </div>
-        <div class="controls compact">
+        <div class="controls compact touch-only">
+          <div><kbd>Left thumb</kbd><span>Move</span></div><div><kbd>Drag</kbd><span>Look</span></div>
+          <div><kbd>Edge</kbd><span>Sprint</span></div><div><kbd>Fly</kbd><span>Flight</span></div>
+          <div><kbd>Tap / hold</kbd><span>Break / place</span></div><div><kbd>Hotbar</kbd><span>Blocks</span></div>
+        </div>
+        <div class="controls compact kb-only">
           <div><kbd>WASD</kbd><span>Move</span></div><div><kbd>Space</kbd><span>Jump</span></div>
           <div><kbd>Shift</kbd><span>Sprint</span></div><div><kbd>F</kbd><span>Fly</span></div>
           <div><kbd>L/R click</kbd><span>Break / place</span></div><div><kbd>1–9</kbd><span>Blocks</span></div>
+        </div>
         </div>
       </div>
     </div>

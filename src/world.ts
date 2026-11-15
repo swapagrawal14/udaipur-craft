@@ -179,7 +179,7 @@ export class World {
   }
 
   /** Stream chunks around (px,pz). budgetMs limits main-thread work this frame. */
-  update(px: number, pz: number, budgetMs: number, viewDir?: THREE.Vector3) {
+  update(px: number, pz: number, budgetMs: number, viewDir?: THREE.Vector3, maxMeshes = Infinity) {
     const t0 = performance.now();
     const pcx = Math.floor(px / CHUNK), pcz = Math.floor(pz / CHUNK);
     const R = this.renderDistance;
@@ -209,13 +209,14 @@ export class World {
     this.dispatch();
 
     // meshing (within render distance only)
+    let meshed = 0;
     for (const [cx, cz] of want) {
-      if (performance.now() - t0 > budgetMs) break;
+      if (performance.now() - t0 > budgetMs || meshed >= maxMeshes) break;
       const dx = cx - pcx, dz = cz - pcz;
       if (dx * dx + dz * dz > (R + 0.5) * (R + 0.5)) continue;
       const c = this.chunks.get(key(cx, cz));
       if (!c || !c.dirty) continue;
-      this.remeshNow(c);
+      if (this.remeshNow(c)) meshed++;
     }
 
     // unload far chunks

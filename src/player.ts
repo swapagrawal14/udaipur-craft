@@ -15,6 +15,9 @@ export class Player {
   headInWater = false;
   keys = new Set<string>();
   eyeOffset = 0; // smooth step-up
+  /** Analog move input (touch joystick): x = strafe right, z = back. Magnitude 0..1. */
+  analogX = 0; analogZ = 0;
+  analogSprint = false;
   private lastSpace = 0;
 
   constructor(public world: World) {}
@@ -75,10 +78,15 @@ export class Player {
     if (k.has('KeyD') || k.has('ArrowRight')) fx += 1;
     const len = Math.hypot(fx, fz) || 1;
     fx /= len; fz /= len;
+    if (fx === 0 && fz === 0 && (this.analogX !== 0 || this.analogZ !== 0)) {
+      const m = Math.hypot(this.analogX, this.analogZ);
+      const s = m > 1 ? 1 / m : 1;
+      fx = this.analogX * s; fz = this.analogZ * s;
+    }
     const sin = Math.sin(this.yaw), cos = Math.cos(this.yaw);
     const wx = fx * cos + fz * sin;
     const wz = -fx * sin + fz * cos;
-    const sprint = k.has('ShiftLeft') || k.has('ShiftRight');
+    const sprint = k.has('ShiftLeft') || k.has('ShiftRight') || this.analogSprint;
 
     let speed = this.flying ? (sprint ? 26 : 12) : sprint ? 6.2 : 4.3;
     if (this.inWater && !this.flying) speed *= 0.5;

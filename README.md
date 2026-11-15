@@ -66,6 +66,36 @@ marble, jaali and lime-wash.
 
 Walking into a one-block ledge, such as a ghat step, steps you up automatically.
 
+## Mobile controls
+
+Udaipur Craft plays on phones and tablets. On a touch device (coarse pointer) the game skips
+pointer lock and shows on-screen controls styled like the HUD:
+
+| Touch | Action |
+|---|---|
+| Left thumb (virtual joystick) | Move, analog. Push past ~85% to sprint (the ring glows gold) |
+| Drag on the right side of the screen | Look around (uses the look-sensitivity slider) |
+| ▲ button | Jump · swim up · ascend while flying |
+| Fly button | Toggle flight |
+| ▼ button (only while flying) | Descend |
+| Break button / quick tap on the view | Break the block under the crosshair (hold the button to repeat) |
+| Place button / long-press on the view | Place the selected block |
+| Hotbar slot | Tap to choose a block |
+| ❚❚ (top left) | Pause |
+
+- Works in landscape and portrait. Landscape is best, and portrait shows a gentle reminder.
+- The UI respects notches and home indicators (`env(safe-area-inset-*)`), and the page does
+  not scroll, zoom or open a long-press menu while you play.
+- Mobile defaults: pixel ratio capped at 1.5 (1 on low-end devices), render distance 6
+  (5 on low-end devices, with 4 and 5 also available in the pause menu), and fewer chunk
+  meshes built per frame. Android Chrome goes fullscreen when you tap **Enter Udaipur**.
+  iOS skips this because Safari has no element fullscreen.
+- To test the touch UI on a desktop browser, open the game with `?touch=1`.
+
+| Landscape title | Landscape in-game | Portrait in-game |
+|---|---|---|
+| ![](screenshots/mobile-landscape-title.png) | ![](screenshots/mobile-landscape-ingame.png) | ![](screenshots/mobile-portrait-ingame.png) |
+
 ## Run and build
 
 ```bash

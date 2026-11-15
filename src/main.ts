@@ -8,11 +8,15 @@ import { Sky } from './sky';
 import { BLOCKS, HOTBAR, B } from './blocks';
 import { SPAWN, LANDMARKS } from './structures';
 import { heightAt } from './terrain';
+import { detectTouch, isLowEndDevice, isIOS, initTouch } from './touch';
 
 // ---------------------------------------------------------------- setup
 const canvas = document.getElementById('game') as HTMLCanvasElement;
+const IS_TOUCH = detectTouch();
+const LOW_END = IS_TOUCH && isLowEndDevice();
+if (IS_TOUCH) document.body.classList.add('touch');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, LOW_END ? 1 : 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping;
@@ -27,8 +31,10 @@ const terrainMat = makeTerrainMaterial(atlas);
 const waterMat = makeWaterMaterial(makeWaterTexture());
 const sky = new Sky(scene);
 
+// Touch devices keep their own render-distance setting (lighter default).
+const RD_KEY = IS_TOUCH ? 'uc.rd.touch' : 'uc.rd';
 const settings = {
-  renderDistance: Number(localStorage.getItem('uc.rd') || 10),
+  renderDistance: Number(localStorage.getItem(RD_KEY) || (IS_TOUCH ? (LOW_END ? 5 : 6) : 10)),
   sensitivity: Number(localStorage.getItem('uc.sens') || 1),
 };
 
@@ -63,6 +69,7 @@ HOTBAR.forEach((id, i) => {
   const n = document.createElement('span'); n.className = 'n'; n.textContent = String(i + 1);
   slot.appendChild(n);
   hotbarEl.appendChild(slot);
+  if (IS_TOUCH) slot.addEventListener('pointerdown', (e) => { e.preventDefault(); if (state === 'playing') select(i); });
 });
 let toastTimer = 0;
 function select(i: number) {
@@ -89,10 +96,12 @@ for (let rep = -1; rep <= 1; rep++)
     el.style.left = `${(deg + rep * 360) * PX_PER_DEG}px`;
     strip.appendChild(el);
   }
+let compassHalf = 210;
+const measureCompass = () => { compassHalf = ($('compass').clientWidth || 420) / 2; };
 function updateCompass() {
   let heading = (-player.yaw * 180) / Math.PI;
   heading = ((heading % 360) + 360) % 360;
-  strip.style.transform = `translateX(${210 - heading * PX_PER_DEG}px)`;
+  strip.style.transform = `translateX(${compassHalf - heading * PX_PER_DEG}px)`;
 }
 
 let currentLandmark = '';
@@ -118,13 +127,20 @@ function updateLandmark() {
 // ---------------------------------------------------------------- state
 type State = 'title' | 'playing' | 'paused';
 let state: State = 'title';
-let noLock = false;
+let noLock = IS_TOUCH;
+let rotateHintArmed = false;
 
 function enterPlay() {
   state = 'playing';
   title.classList.add('hidden');
   pause.classList.add('hidden');
   hud.classList.remove('hidden');
+  measureCompass();
+  document.body.classList.remove('paused');
+  if (IS_TOUCH) {
+    document.body.classList.add('in-game');
+    if (!rotateHintArmed) { rotateHintArmed = true; setTimeout(() => document.body.classList.add('hint-done'), 6000); }
+  }
   if (!noLock) {
     try {
       const r = canvas.requestPointerLock() as unknown as Promise<void> | undefined;
@@ -136,11 +152,22 @@ function enterPause() {
   if (state !== 'playing') return;
   state = 'paused';
   player.keys.clear();
+  touch?.reset();
   pause.classList.remove('hidden');
+  document.body.classList.add('paused');
   syncSeg();
 }
 
-playBtn.addEventListener('click', () => enterPlay());
+function requestFullscreenSafe() {
+  // Only on touch, never on iOS Safari (no element fullscreen; can misbehave), and never fatal.
+  if (!IS_TOUCH || isIOS() || document.fullscreenElement) return;
+  const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+  try {
+    if (el.requestFullscreen) { const r = el.requestFullscreen({ navigationUI: 'hide' }); if (r && r.catch) r.catch(() => {}); }
+    else el.webkitRequestFullscreen?.();
+  } catch { /* ignore */ }
+}
+playBtn.addEventListener('click', () => { requestFullscreenSafe(); enterPlay(); });
 $('resume').addEventListener('click', () => enterPlay());
 $('show-controls').addEventListener('click', () => $('controls').classList.toggle('hidden'));
 document.addEventListener('pointerlockchange', () => {
@@ -160,7 +187,7 @@ document.querySelectorAll<HTMLButtonElement>('#time-seg button').forEach((b) =>
 document.querySelectorAll<HTMLButtonElement>('#rd-seg button').forEach((b) =>
   b.addEventListener('click', () => {
     world.renderDistance = settings.renderDistance = Number(b.dataset.rd);
-    localStorage.setItem('uc.rd', String(settings.renderDistance));
+    localStorage.setItem(RD_KEY, String(settings.renderDistance));
     syncSeg();
   }));
 $('sens').addEventListener('input', (e) => {
@@ -179,7 +206,7 @@ window.addEventListener('keydown', (e) => {
   player.setKey(e.code, true);
 });
 window.addEventListener('keyup', (e) => player.setKey(e.code, false));
-window.addEventListener('blur', () => player.keys.clear());
+window.addEventListener('blur', () => { player.keys.clear(); touch?.reset(); });
 document.addEventListener('mousemove', (e) => {
   if (state !== 'playing' || document.pointerLockElement !== canvas) return;
   const s = 0.0022 * settings.sensitivity;
@@ -214,11 +241,38 @@ function act(button: number) {
   }
 }
 
-window.addEventListener('resize', () => {
+function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-});
+  measureCompass();
+}
+window.addEventListener('resize', onResize);
+if (IS_TOUCH) {
+  // mobile browsers report the new size late after rotation / toolbar changes
+  const late = () => { onResize(); setTimeout(onResize, 120); setTimeout(onResize, 450); };
+  window.addEventListener('orientationchange', late);
+  window.visualViewport?.addEventListener('resize', late);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) enterPause(); });
+  // iOS pinch / double-tap zoom guards
+  for (const ev of ['gesturestart', 'gesturechange', 'dblclick'])
+    document.addEventListener(ev, (e) => e.preventDefault(), { passive: false } as AddEventListenerOptions);
+}
+
+// ---------------------------------------------------------------- touch controls
+const touch = IS_TOUCH
+  ? initTouch($('touch'), {
+      player,
+      isPlaying: () => state === 'playing',
+      lookSpeed: () => 0.0022 * settings.sensitivity * 1.8,
+      act: (b) => act(b),
+      hold: (b) => {
+        if (b < 0) { mouseHeld = -1; return; }
+        mouseHeld = b; act(b); repeatT = 0.28;
+      },
+      pause: () => enterPause(),
+    })
+  : null;
 
 // ---------------------------------------------------------------- loop
 let lastT = performance.now();
@@ -248,7 +302,8 @@ function frame() {
   } else camera.rotation.set(player.pitch, player.yaw, 0);
   camera.getWorldDirection(dir);
 
-  world.update(eye.x, eye.z, state === 'title' ? 12 : 6, dir);
+  if (IS_TOUCH) world.update(eye.x, eye.z, state === 'title' ? 8 : 4, dir, state === 'title' ? 3 : 1);
+  else world.update(eye.x, eye.z, state === 'title' ? 12 : 6, dir);
   sky.update(dt, camera.position, world.renderDistance * 16 * 0.94);
 
   // underwater
@@ -280,6 +335,7 @@ function frame() {
     const m = $('mode');
     m.textContent = player.flying ? 'Flight' : player.inWater ? 'Swimming' : '';
     m.classList.toggle('on', player.flying || player.inWater);
+    touch?.sync();
     if (debugOn) {
       const info = renderer.info.render;
       $('debug').textContent =
