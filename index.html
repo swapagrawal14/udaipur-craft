@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Udaipur Craft — The City of Lakes</title>
+    <meta name="description" content="A voxel open world of Udaipur, Rajasthan — Lake Pichola, City Palace, Jag Niwas and Sajjangarh at golden hour." />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hidden">
+      <div id="compass"><div id="compass-strip"></div><div id="compass-needle"></div></div>
+      <div id="landmark"><div class="lm-en"></div><div class="lm-hi"></div></div>
+      <div id="clock"><span id="clock-icon"></span><span id="clock-text">17:10</span></div>
+      <div id="mode"></div>
+      <div id="crosshair"></div>
+      <div id="toast"></div>
+      <div id="hotbar"></div>
+      <div id="debug" class="hidden"></div>
+    </div>
+    <div id="underwater"></div>
+
+    <div id="title" class="screen">
+      <div class="vignette"></div>
+      <div class="panel">
+        <div class="eyebrow">A voxel journey through Mewar</div>
+        <h1>Udaipur&nbsp;Craft</h1>
+        <div class="ornament">
+          <svg viewBox="0 -8 220 32" aria-hidden="true">
+            <path d="M0 14 H78" />
+            <path d="M142 14 H220" />
+            <path d="M86 22 V12 Q86 4 94 2 Q102 4 102 12 V22 M94 2 V0" />
+            <path d="M102 22 V9 Q102 -1 110 -3 Q118 -1 118 9 V22 M110 -3 V-6" />
+            <path d="M118 22 V12 Q118 4 126 2 Q134 4 134 12 V22 M126 2 V0" />
+            <path d="M82 22 H138" />
+          </svg>
+        </div>
+        <div class="subtitle">The City of Lakes</div>
+        <div class="hindi">झीलों की नगरी</div>
+        <p class="blurb">Wander the ghats of Lake Pichola at golden hour. Build with marble, jaali and lime&#8209;wash; watch the City Palace light up after dusk.</p>
+        <div class="actions">
+          <button id="play" class="btn primary" disabled><span class="label">Preparing the city…</span><span class="bar"><span id="progress"></span></span></button>
+          <button id="show-controls" class="btn ghost">Controls</button>
+        </div>
+        <div id="controls" class="controls hidden">
+          <div><kbd>W A S D</kbd><span>Walk</span></div>
+          <div><kbd>Space</kbd><span>Jump · swim up</span></div>
+          <div><kbd>Shift</kbd><span>Sprint</span></div>
+          <div><kbd>F</kbd> / <kbd>Space ×2</kbd><span>Toggle flight</span></div>
+          <div><kbd>C</kbd><span>Descend while flying</span></div>
+          <div><kbd>Left click</kbd><span>Break block</span></div>
+          <div><kbd>Right click</kbd><span>Place block</span></div>
+          <div><kbd>1–9</kbd> / <kbd>Wheel</kbd><span>Choose block</span></div>
+          <div><kbd>T</kbd><span>Hold to speed up time</span></div>
+          <div><kbd>F3</kbd><span>Debug info</span></div>
+          <div><kbd>Esc</kbd><span>Pause</span></div>
+        </div>
+      </div>
+      <div class="foot">Click <b>Enter Udaipur</b> to begin · <b>Esc</b> to pause</div>
+    </div>
+
+    <div id="pause" class="screen hidden">
+      <div class="panel small">
+        <div class="eyebrow">Paused</div>
+        <h2>Udaipur Craft</h2>
+        <div class="hindi sm">झीलों की नगरी</div>
+        <button id="resume" class="btn primary"><span class="label">Resume</span></button>
+        <div class="row">
+          <span class="rl">Time of day</span>
+          <div class="seg" id="time-seg">
+            <button data-t="0.27">Dawn</button>
+            <button data-t="0.5">Noon</button>
+            <button data-t="0.715">Golden hour</button>
+            <button data-t="0.775">Dusk</button>
+            <button data-t="0.95">Night</button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="rl">Render distance</span>
+          <div class="seg" id="rd-seg">
+            <button data-rd="6">6</button><button data-rd="8">8</button><button data-rd="10">10</button><button data-rd="12">12</button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="rl">Mouse sensitivity</span>
+          <input type="range" id="sens" min="0.3" max="2.5" step="0.05" value="1" />
+        </div>
+        <div class="controls compact">
+          <div><kbd>WASD</kbd><span>Move</span></div><div><kbd>Space</kbd><span>Jump</span></div>
+          <div><kbd>Shift</kbd><span>Sprint</span></div><div><kbd>F</kbd><span>Fly</span></div>
+          <div><kbd>L/R click</kbd><span>Break / place</span></div><div><kbd>1–9</kbd><span>Blocks</span></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
